@@ -7,7 +7,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Logo from '@public/logo.png';
 
 import { theme } from '@/theme';
-import { Label } from '@/components/taskCard';
+import { TaskCard } from '@/components/taskCard';
 import { styles } from './styles';
 
 export function Home() {
@@ -16,16 +16,6 @@ export function Home() {
     const [newTask, setNewTask] = useState('')
     const [countCreated, setCreatedDone] = useState(0)
     const [countCompleted, setCompletedDone] = useState(0)
-
-    const [fontsLoaded, fontError] = useFonts({
-        Inter_400Regular,
-        Inter_700Bold
-    })
-
-    if (!fontsLoaded && !fontError) {
-        return null;
-    }
-
 
     const handleAddTask = () => {
         if (taskCard.includes(newTask)) return Alert.alert('Erro', 'Tarefa já adicionada')
@@ -74,6 +64,11 @@ export function Home() {
         setTaskCard(updatedTaskCard);
     }
 
+    const handleEditTask = (index: number, newTitle: string) => {
+        let updatedTaskCard = [...taskCard];
+        updatedTaskCard[index] = newTitle;
+        setTaskCard(updatedTaskCard);
+    }
 
     return (
 
@@ -83,7 +78,7 @@ export function Home() {
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.container}>
-                    <StatusBar style='auto' />
+                    <StatusBar style='light' />
 
                     <View style={styles.header}>
                         <Image source={Logo} style={styles.logo} />
@@ -102,7 +97,9 @@ export function Home() {
                                 <Ionicons
                                     name='add-circle-outline'
                                     color={theme.color.gray[100]}
-                                    size={24} />
+                                    size={24}
+                                />
+
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -128,8 +125,11 @@ export function Home() {
                         data={taskCard}
                         keyExtractor={item => item}
                         renderItem={({ item, index }) => (
-                            <Label title={item} onPress={() => confirmDelete(item)}
+                            <TaskCard
+                                title={item}
+                                onPress={() => confirmDelete(item)}
                                 onCheckboxChange={(value: boolean) => handleCheckboxChange(value, index)}
+                                onEdit={(newTitle: string) => handleEditTask(index, newTitle)}
                             />
                         )}
                         ListEmptyComponent={
