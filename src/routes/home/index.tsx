@@ -1,29 +1,36 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Alert, FlatList, Image, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Alert, FlatList, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
-import Logo from '@public/logo.png';
 
 import { theme } from '@/theme';
 import { TaskCard } from '@/components/taskCard';
 import { styles } from './styles';
+import { ModalCard } from '@/components/modalCard';
 
 export function Home() {
 
     const [taskCard, setTaskCard] = useState<string[]>([])
-    const [newTask, setNewTask] = useState('')
+    const [newTaskTitle, setNewTaskTitle] = useState('')
+    const [newTaskDetails, setNewTaskDetails] = useState('')
     const [countCreated, setCreatedDone] = useState(0)
     const [countCompleted, setCompletedDone] = useState(0)
+    const [isOpen, setIsOpen] = useState(false)
+
+    const createNewTask = () => {
+        setIsOpen(true)
+    }
 
     const handleAddTask = () => {
-        if (taskCard.includes(newTask)) return Alert.alert('Erro', 'Tarefa já adicionada')
-        if (!newTask) return Alert.alert('Alerta!', 'Digite uma tarefa para adicionar')
+        if (taskCard.includes(newTaskTitle)) return Alert.alert('Erro', 'Tarefa já adicionada')
+        if (!newTaskTitle) return Alert.alert('Alerta!', 'Digite uma tarefa para adicionar')
 
-        setTaskCard(prevState => [newTask, ...prevState])
-        setNewTask('')
+        setTaskCard(prevState => [newTaskTitle, ...prevState])
+        setNewTaskTitle('')
         setCreatedDone(countCreated + 1)
+
+        setIsOpen(false)
+
     }
 
     const confirmDelete = (taskItem: string) => {
@@ -65,9 +72,12 @@ export function Home() {
     }
 
     const handleEditTask = (index: number, newTitle: string) => {
+        setIsOpen(true)
+
         let updatedTaskCard = [...taskCard];
         updatedTaskCard[index] = newTitle;
-        setTaskCard(updatedTaskCard);
+
+        setTaskCard(updatedTaskCard)
     }
 
     return (
@@ -80,29 +90,7 @@ export function Home() {
                 <View style={styles.container}>
                     <StatusBar style='light' />
 
-                    <View style={styles.header}>
-                        <Image source={Logo} style={styles.logo} />
-                        <View style={styles.inputLabel}>
-                            <TextInput
-                                placeholder='Adicione uma nova tarefa'
-                                placeholderTextColor={theme.color.gray[300]}
-                                style={styles.inputText}
-                                onChangeText={setNewTask}
-                                value={newTask}
-                            />
 
-                            <TouchableOpacity style={styles.button}
-                                onPress={() => handleAddTask()}
-                            >
-                                <Ionicons
-                                    name='add-circle-outline'
-                                    color={theme.color.gray[100]}
-                                    size={24}
-                                />
-
-                            </TouchableOpacity>
-                        </View>
-                    </View>
 
                     <View style={styles.todoCount}>
                         <View style={styles.todoContent}>
@@ -129,13 +117,57 @@ export function Home() {
                                 title={item}
                                 onPress={() => confirmDelete(item)}
                                 onCheckboxChange={(value: boolean) => handleCheckboxChange(value, index)}
-                                onEdit={(newTitle: string) => handleEditTask(index, newTitle)}
+                                onEdit={() => handleEditTask(index, item)}
                             />
                         )}
                         ListEmptyComponent={
                             <Text style={{ color: theme.color.gray[100] }}>Nenhuma tarefa encontrada</Text>
                         }
                     />
+
+                    {isOpen && (
+                        <ModalCard
+                            title=''
+                            isOpen={isOpen}
+                            setIsOpen={setIsOpen}
+                            backgroundColor={theme.color.gray[600]}
+                            onPress={handleAddTask}
+                            children={
+                                <View style={styles.inputLabel}>
+
+                                    <View style={styles.inputView}>
+                                        <Text style={styles.text}>Nome da Tarefa</Text>
+                                        <TextInput
+                                            placeholder='ex: Estudar React Native'
+                                            placeholderTextColor={theme.color.gray[300]}
+                                            style={styles.inputText}
+                                            onChangeText={setNewTaskTitle}
+                                            value={newTaskTitle}
+                                        />
+                                    </View>
+
+
+                                    <View style={styles.inputView}>
+                                        <Text style={styles.text}>Detalhes</Text>
+                                        <TextInput
+                                            placeholder='ex: estudar hooks, context, navegação'
+                                            placeholderTextColor={theme.color.gray[300]}
+                                            style={styles.inputTextDetails}
+                                            onChangeText={setNewTaskDetails}
+                                            value={newTaskDetails}
+                                            multiline={true}
+                                        />
+                                    </View>
+
+                                </View>
+                            }
+                        />
+                    )}
+
+                    <TouchableOpacity style={styles.addTaskButton} onPress={createNewTask}>
+                        <Text style={styles.addTaskText}>+</Text>
+                    </TouchableOpacity>
+
                 </View>
 
             </TouchableWithoutFeedback>
